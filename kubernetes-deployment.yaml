@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-kubernetes
+  namespace: test-kubernetes
+  labels:
+    app: demo-kubernetes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-kubernetes
+  template:
+    metadata:
+      name: demo-kubernetes
+      labels:
+        app: demo-kubernetes
+    spec:
+      containers:
+        - name: demo-kubernetes
+          image: moheyeldinbadr/demo-kubernetes:0.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-kubernetes
+  namespace: test-kubernetes
+spec:
+  selector:
+    app: demo-kubernetes
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+

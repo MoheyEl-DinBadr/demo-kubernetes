@@ -1,0 +1,6 @@
+version: "2"
+
+services:
+  demo-kubernetes:
+    build: .
+    image: moheyeldinbadr/demo-kubernetes:0.4
