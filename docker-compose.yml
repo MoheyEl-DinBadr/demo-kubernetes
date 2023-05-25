@@ -3,4 +3,15 @@ version: "2"
 services:
   demo-kubernetes:
     build: .
-    image: moheyeldinbadr/demo-kubernetes:0.4
+    image: moheyeldinbadr/demo-kubernetes:0.7
+    ports:
+      - "8888:8080"
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: testdb

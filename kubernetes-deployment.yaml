@@ -18,10 +18,26 @@ spec:
     spec:
       containers:
         - name: demo-kubernetes
-          image: moheyeldinbadr/demo-kubernetes:0.4
+          image: moheyeldinbadr/demo-kubernetes:0.7
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
+          env:
+            - name: spring.r2dbc.url
+              valueFrom:
+                configMapKeyRef:
+                  key: url
+                  name: postgres-config
+            - name: spring.r2dbc.username
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: postgres
+            - name: spring.r2dbc.password
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgres
       restartPolicy: Always
 
 ---
@@ -38,5 +54,75 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-  type: NodePort
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      name: postgres
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: postgres
+      restartPolicy: Always
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres
+data:
+  database: "cG9zdGdyZXM="
+  username: "cG9zdGdyZXM="
+  password: "ZXhhbXBsZQ=="
+  url: "cjJkYmM6cG9zdGdyZXNxbDovL3Bvc3RncmVzOjU0MzIvcG9zdGdyZXM="
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  url: "r2dbc:postgresql://postgres:5432/postgres"
+
+
 
